@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,55 +43,33 @@ public class SecondFragment extends Fragment {
     private EditText messageEditText;
     private ImageButton sendButton;
     private ChatAdapter chatAdapter;
-    public List<Message> messageList;
-
-    private Executor executor;
+    private ChatViewModel chatViewModel;
+    private List<Message> messageList;
     private ChatFutures chatSessionFutures;
-
-    private static final String SYSTEM_PROMPT =
-            "You are MindPilot, an empathetic mental health companion for young adults (U30). " +
-                    "Your primary role is to listen, validate feelings, and provide non-diagnostic, informational support based on established wellness principles. " +
-                    "You MUST NOT give clinical advice or diagnosis. If the user mentions self-harm or crisis, you must immediately reply by emphasizing the need for professional help and suggesting they call an external hotline. " +
-                    "Keep responses supportive, brief, and actionable, maintaining a compassionate, non-judgmental tone.";
-
+    private Executor executor;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_second, container, false);
 
+        chatViewModel = new ViewModelProvider(requireActivity()).get(ChatViewModel.class);
+
+        messageList = chatViewModel.getMessageList();
+        chatSessionFutures = chatViewModel.getChatSessionFutures();
+        executor = chatViewModel.getExecutor();
+
         recyclerView = view.findViewById(R.id.recycler_view_messages);
         messageEditText = view.findViewById(R.id.message_edit_text);
         sendButton = view.findViewById(R.id.send_button);
 
-        messageList = new ArrayList<>();
         chatAdapter = new ChatAdapter(messageList);
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setStackFromEnd(true);
         recyclerView.setLayoutManager(llm);
         recyclerView.setAdapter(chatAdapter);
 
-        addToChat("Welcome to MindPilot. I'm here to listen and provide helpful information. What's on your mind today?", Message.SENT_BY_BOT);
-
-        try {
-            executor = Executors.newSingleThreadExecutor();
-
-            GenerativeModel baseModel = FirebaseAI.getInstance(GenerativeBackend.googleAI()).generativeModel(
-                    "gemini-2.5-flash", null, null, null, null, new Content.Builder().addText(SYSTEM_PROMPT).build());
-
-            Content.Builder systemContentBuilder = new Content.Builder();
-            systemContentBuilder.setRole("user");
-            Content systemContent = systemContentBuilder.build();
-
-            List<Content> history = List.of(systemContent);
-            Chat chatSession = baseModel.startChat(history);
-
-            chatSessionFutures = ChatFutures.from(chatSession);
-
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to initialize Firebase Gemini SDK.", e);
-            addToChat("Error: AI service failed to initialize.", Message.SENT_BY_BOT);
-        }
+        recyclerView.smoothScrollToPosition(chatAdapter.getItemCount());
 
         sendButton.setOnClickListener(v -> {
             String question = messageEditText.getText().toString().trim();
