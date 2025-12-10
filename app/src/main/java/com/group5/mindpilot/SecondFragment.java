@@ -114,27 +114,31 @@ public class SecondFragment extends Fragment {
         Futures.addCallback(responseFuture, new FutureCallback<GenerateContentResponse>() {
             @Override
             public void onSuccess(@Nullable GenerateContentResponse response) {
-                requireActivity().runOnUiThread(() -> {
-                    removeLastMessage();
+                if (isAdded() && getActivity() != null) {
+                    requireActivity().runOnUiThread(() -> {
+                        removeLastMessage();
 
-                    String aiResponse = (response != null) ? response.getText() : null;
+                        String aiResponse = (response != null) ? response.getText() : null;
 
-                    if (aiResponse != null && !aiResponse.isEmpty()) {
-                        addToChat(aiResponse, Message.SENT_BY_BOT);
-                    } else {
-                        addToChat("Sorry, I received an empty response or content block.", Message.SENT_BY_BOT);
-                    }
-                });
+                        if (aiResponse != null && !aiResponse.isEmpty()) {
+                            addToChat(aiResponse, Message.SENT_BY_BOT);
+                        } else {
+                            addToChat("Sorry, I received an empty response or content block.", Message.SENT_BY_BOT);
+                        }
+                    });
+                }
             }
 
             @Override
             public void onFailure(@NonNull Throwable t) {
-                requireActivity().runOnUiThread(() -> {
-                    removeLastMessage();
+                if (isAdded() && getActivity() != null) {
+                    requireActivity().runOnUiThread(() -> {
+                        removeLastMessage();
 
-                    Log.e(TAG, "API failure:", t);
-                    addToChat("API Error: Could not connect or model blocked content. (" + t.getLocalizedMessage() + ")", Message.SENT_BY_BOT);
-                });
+                        Log.e(TAG, "API failure:", t);
+                        addToChat("API Error: Could not connect or model blocked content. (" + t.getLocalizedMessage() + ")", Message.SENT_BY_BOT);
+                    });
+                }
             }
         }, executor);
     }
