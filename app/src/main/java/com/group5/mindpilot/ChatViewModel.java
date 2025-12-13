@@ -30,7 +30,7 @@ public class ChatViewModel extends ViewModel {
     private Executor executor;
 
     private static final String SYSTEM_PROMPT =
-            "You are AuraMind, an empathetic mental health companion for young adults (U30). " +
+            "You are MindPilot, an empathetic mental health companion for young adults (U30). " +
                     "Your primary role is to listen, validate feelings, and provide non-diagnostic, informational support based on established wellness principles. " +
                     "You MUST NOT give clinical advice or diagnosis. If the user mentions self-harm or crisis, you must immediately reply by emphasizing the need for professional help and suggesting they call an external hotline. " +
                     "Keep responses supportive, brief, and actionable, maintaining a compassionate, non-judgmental tone.";
@@ -57,7 +57,7 @@ public class ChatViewModel extends ViewModel {
             chatSessionFutures = ChatFutures.from(chatSession);
 
             if (messageList.isEmpty()) {
-                messageList.add(new Message("Welcome to AuraMind. I'm here to listen and provide helpful information. What's on your mind today?", Message.SENT_BY_BOT));
+                messageList.add(new Message("Welcome to MindPilot. I'm here to listen and provide helpful information. What's on your mind today?", Message.SENT_BY_BOT));
             }
 
         } catch (Exception e) {
